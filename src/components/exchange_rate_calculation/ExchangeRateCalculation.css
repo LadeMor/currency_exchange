@@ -70,3 +70,9 @@ p{
     color: black;
     border-color: gray;
 }
+
+.disabled_button{
+    background-color: #bebebe;
+    color: #7a7a7a;
+    border-color: white;
+}
