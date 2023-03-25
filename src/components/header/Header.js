@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from "react";
+import {getCurrencyValue} from "../services/currency_exchange_service/CurrencyExchangeService";
 import './Header.css';
 
 const Header = () => {
@@ -8,28 +9,21 @@ const Header = () => {
         EUR: 0
     });
 
-    let myHeaders = new Headers();
-    myHeaders.append("apikey", "SWtWHgQFwT6UNEzYBhsEAuqKUP6dfyxK");
-
-    let requestOptions = {
-        method: 'GET',
-        redirect: 'follow',
-        headers: myHeaders
-    };
-
+    const [isLoading, setIsLoading] = useState(true);
 
     // useEffect(() => {
-    //     fetch("https://api.apilayer.com/exchangerates_data/convert?to=UAH&from=EUR&amount=1", requestOptions)
-    //         .then(response => response.json())
-    //         .then(result => setCurrencyValue(currencyValue => ({...currencyValue, EUR: result.result})))
-    //         .catch(error => console.log('error', error));
-    //
-    //     fetch("https://api.apilayer.com/exchangerates_data/convert?to=UAH&from=USD&amount=1", requestOptions)
-    //         .then(response => response.json())
-    //         .then(result => setCurrencyValue(currencyValue => ({...currencyValue, USD: result.result})))
-    //         .catch(error => console.log('error', error));
+    //     Promise.all([
+    //         getCurrencyValue('UAH', 'EUR', 1),
+    //         getCurrencyValue('UAH', 'USD', 1)
+    //     ])
+    //         .then(results => {
+    //             setCurrencyValue({
+    //                 EUR: results[0].result,
+    //                 USD: results[1].result
+    //             });
+    //             setIsLoading(false);
+    //         })
     // }, [])
-
 
     return(
         <React.Fragment>
@@ -37,15 +31,19 @@ const Header = () => {
                 <div className='header__title'>
                     <h3>Currency Rate</h3>
                 </div>
-                <div className='header__currency'>
-                    <div className='header__currency__rate'>
-                        <p>USD: {currencyValue.USD.toFixed(2)}</p>
+                {isLoading ?
+                    <div className='header__currency'>
+                        <h3>Loading...</h3>
                     </div>
-                    <div className='header__currency__rate'>
-                        <p>EUR: {currencyValue.EUR.toFixed(2)}</p>
-                    </div>
-
-                </div>
+                :
+                    <div className='header__currency'>
+                        <div className='header__currency__rate'>
+                            <p>USD: {currencyValue.USD.toFixed(2)}</p>
+                        </div>
+                        <div className='header__currency__rate'>
+                            <p>EUR: {currencyValue.EUR.toFixed(2)}</p>
+                        </div>
+                    </div>}
             </div>
         </React.Fragment>
     );
