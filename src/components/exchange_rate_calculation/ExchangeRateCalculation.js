@@ -12,12 +12,12 @@ const ExchangeRateCalculation = () => {
         lastChangedValue: 1,
         result: 0
     });
-
     const [allSymbols, setAllSymbols] = useState({
         USD: 'U.S. Dollar',
         EUR: 'Euro',
         UAH: 'Ukrainian Hryvnia',
     });
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         getAllSymbols()
@@ -25,38 +25,45 @@ const ExchangeRateCalculation = () => {
     },[])
 
     const exchangeRateConverterFirst = () => {
-        getCurrencyValue(
-            currencyExchangeValues.secondCurrency,
-            currencyExchangeValues.firstCurrency,
-            currencyExchangeValues.firstCurrencyValue)
-            .then(res => setCurrencyExchangeValues(currencyExchangeValues => ({
-                ...currencyExchangeValues, result: res.result, secondCurrencyValue: res.result
-            })))
+        setIsLoading(true);
+       try{
+           getCurrencyValue(
+               currencyExchangeValues.secondCurrency,
+               currencyExchangeValues.firstCurrency,
+               currencyExchangeValues.firstCurrencyValue)
+               .then(res => {
+                   setCurrencyExchangeValues(currencyExchangeValues => ({
+                       ...currencyExchangeValues, result: res.result, secondCurrencyValue: res.result
+                   }))
+                   setIsLoading(false);
+               })
+       }catch (error){
+           setIsLoading(false);
+           console.error("Error occurred in exchangeRateConverterFirst: ", error);
+       }
     }
 
     const exchangeRateConverterSecond = () => {
-        getCurrencyValue(
-            currencyExchangeValues.firstCurrency,
-            currencyExchangeValues.secondCurrency,
-            currencyExchangeValues.secondCurrencyValue)
-            .then(res => setCurrencyExchangeValues(currencyExchangeValues => ({
-                ...currencyExchangeValues, result: res.result, firstCurrencyValue: res.result
-            })))
+        setIsLoading(true);
+        try{
+            getCurrencyValue(
+                currencyExchangeValues.firstCurrency,
+                currencyExchangeValues.secondCurrency,
+                currencyExchangeValues.secondCurrencyValue)
+                .then(res => {setCurrencyExchangeValues(currencyExchangeValues => ({
+                    ...currencyExchangeValues, result: res.result, firstCurrencyValue: res.result
+                }))
+                    setIsLoading(false);
+                })
+        }catch (error){
+            setIsLoading(false);
+            console.error("Error occurred in exchangeRateConverterSecond: ", error);
+        }
     }
 
     useEffect(() => {
         exchangeRateConverterFirst();
     }, [])
-
-    useEffect(() => {
-        console.log(currencyExchangeValues);
-    },[currencyExchangeValues]);
-
-    const options = Object.keys(allSymbols).map((currencyCode) => (
-        <option key={currencyCode} value={currencyCode}>
-            {`${currencyCode} ${allSymbols[currencyCode]}`}
-        </option>
-    ));
 
     const handleFirstValueChange = (e) => {
         setCurrencyExchangeValues(currencyExchangeValues =>
@@ -82,6 +89,12 @@ const ExchangeRateCalculation = () => {
         }
     }
 
+    const options = Object.keys(allSymbols).map((currencyCode) => (
+        <option key={currencyCode} value={currencyCode}>
+            {`${currencyCode} ${allSymbols[currencyCode]}`}
+        </option>
+    ));
+
     return(
         <div className='container'>
             <div className='box'>
@@ -93,9 +106,11 @@ const ExchangeRateCalculation = () => {
                     <div className='currency_selector__inputs'>
                         <input type='number'
                                min='0'
+                               disabled={isLoading}
                                value={currencyExchangeValues.firstCurrencyValue}
                                onChange={handleFirstValueChange}/>
-                        <select onChange={handleFirstCurrencyChange} >
+                        <select onChange={handleFirstCurrencyChange}
+                                disabled={isLoading}>
                             {options}
                         </select>
                     </div>
@@ -105,16 +120,20 @@ const ExchangeRateCalculation = () => {
                     <div className='currency_selector__inputs'>
                         <input type='number'
                                min='0'
+                               disabled={isLoading}
                                value={currencyExchangeValues.secondCurrencyValue}
                                onChange={handleSecondValueChange}/>
-                        <select onChange={handleSecondCurrencyChange} defaultValue='UAH'>
+                        <select onChange={handleSecondCurrencyChange}
+                                defaultValue='UAH'
+                                disabled={isLoading}>
                             {options}
                         </select>
                     </div>
                 </div>
                 <button onClick={currencyExchangeValues.lastChangedValue === 1 ?
                     exchangeRateConverterFirst : exchangeRateConverterSecond}
-                className='currency_convert_button'>Convert</button>
+                className={`currency_convert_button ${isLoading ? 'disabled_button' : null} `} disabled={isLoading}
+                >Convert</button>
             </div>
         </div>
     );

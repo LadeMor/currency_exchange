@@ -11,19 +11,19 @@ const Header = () => {
 
     const [isLoading, setIsLoading] = useState(true);
 
-    // useEffect(() => {
-    //     Promise.all([
-    //         getCurrencyValue('UAH', 'EUR', 1),
-    //         getCurrencyValue('UAH', 'USD', 1)
-    //     ])
-    //         .then(results => {
-    //             setCurrencyValue({
-    //                 EUR: results[0].result,
-    //                 USD: results[1].result
-    //             });
-    //             setIsLoading(false);
-    //         })
-    // }, [])
+    useEffect(() => {
+        Promise.all([
+            getCurrencyValue('UAH', 'EUR', 1),
+            getCurrencyValue('UAH', 'USD', 1)
+        ])
+            .then(results => {
+                setCurrencyValue({
+                    EUR: results[0].result,
+                    USD: results[1].result
+                });
+                setIsLoading(false);
+            })
+    }, [])
 
     return(
         <React.Fragment>

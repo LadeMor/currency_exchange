@@ -1,4 +1,4 @@
-const _apiKey = 'H8zI25bUYTchSZD7DoK22dDvpWACwkhD';
+const _apiKey = 'WsMR5fjXdmAvETtVaBV5YoHDXiZVI0Sd';
 const _apiBase = 'https://api.apilayer.com/exchangerates_data/';
 
 export const getCurrencyValue = async (to, from, amount) => {
