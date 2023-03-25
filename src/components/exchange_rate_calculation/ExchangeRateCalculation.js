@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import './ExchangeRateCalculation.css'
+import {getCurrencyValue, getAllSymbols} from "../services/currency_exchange_service/CurrencyExchangeService";
+import './ExchangeRateCalculation.css';
 
 const ExchangeRateCalculation = () => {
 
@@ -8,6 +9,7 @@ const ExchangeRateCalculation = () => {
         secondCurrency: 'UAH',
         firstCurrencyValue: 1,
         secondCurrencyValue: 0,
+        lastChangedValue: 1,
         result: 0
     });
 
@@ -17,48 +19,29 @@ const ExchangeRateCalculation = () => {
         UAH: 'Ukrainian Hryvnia',
     });
 
-    let myHeaders = new Headers();
-    myHeaders.append("apikey", "SWtWHgQFwT6UNEzYBhsEAuqKUP6dfyxK");
-
-    let requestOptions = {
-        method: 'GET',
-        redirect: 'follow',
-        headers: myHeaders
-    };
-
-    // useEffect(() => {
-    //     fetch("https://api.apilayer.com/fixer/symbols", requestOptions)
-    //         .then(response => response.json())
-    //         .then(result => setAllSymbols(result.symbols))
-    //         .catch(error => console.log('error', error));
-    // },[])
+    useEffect(() => {
+        getAllSymbols()
+            .then(result => setAllSymbols(result.symbols))
+    },[])
 
     const exchangeRateConverterFirst = () => {
-        setTimeout(() => {
-            fetch(`https://api.apilayer.com/exchangerates_data/convert?to=` +
-                `${currencyExchangeValues.secondCurrency}&from=` +
-                `${currencyExchangeValues.firstCurrency}&amount=` +
-                `${currencyExchangeValues.firstCurrencyValue}`, requestOptions)
-                .then(response => response.json())
-                .then(res => setCurrencyExchangeValues(currencyExchangeValues => ({
-                    ...currencyExchangeValues, result: res.result, secondCurrencyValue: res.result
-                })))
-                .catch(error => console.log('error', error));
-        }, 500)
+        getCurrencyValue(
+            currencyExchangeValues.secondCurrency,
+            currencyExchangeValues.firstCurrency,
+            currencyExchangeValues.firstCurrencyValue)
+            .then(res => setCurrencyExchangeValues(currencyExchangeValues => ({
+                ...currencyExchangeValues, result: res.result, secondCurrencyValue: res.result
+            })))
     }
 
     const exchangeRateConverterSecond = () => {
-        setTimeout(() => {
-            fetch(`https://api.apilayer.com/exchangerates_data/convert?to=` +
-                `${currencyExchangeValues.secondCurrency}&from=` +
-                `${currencyExchangeValues.firstCurrency}&amount=` +
-                `${currencyExchangeValues.secondCurrencyValue}`, requestOptions)
-                .then(response => response.json())
-                .then(res => setCurrencyExchangeValues(currencyExchangeValues => ({
-                    ...currencyExchangeValues, result: res.result, firstCurrencyValue: res.result
-                })))
-                .catch(error => console.log('error', error));
-        }, 500)
+        getCurrencyValue(
+            currencyExchangeValues.firstCurrency,
+            currencyExchangeValues.secondCurrency,
+            currencyExchangeValues.secondCurrencyValue)
+            .then(res => setCurrencyExchangeValues(currencyExchangeValues => ({
+                ...currencyExchangeValues, result: res.result, firstCurrencyValue: res.result
+            })))
     }
 
     useEffect(() => {
@@ -77,24 +60,18 @@ const ExchangeRateCalculation = () => {
 
     const handleFirstValueChange = (e) => {
         setCurrencyExchangeValues(currencyExchangeValues =>
-            ({...currencyExchangeValues, firstCurrencyValue: e.target.value}));
-        setTimeout(() => {
-            exchangeRateConverterFirst();
-        }, 500);
-
+            ({...currencyExchangeValues, firstCurrencyValue: e.target.value, lastChangedValue: 1}));
     }
 
     const handleSecondValueChange = (e) => {
         setCurrencyExchangeValues(currencyExchangeValues =>
-            ({...currencyExchangeValues, secondCurrencyValue: e.target.value}));
-        exchangeRateConverterSecond();
+            ({...currencyExchangeValues, secondCurrencyValue: e.target.value, lastChangedValue: 2}));
     }
 
     const handleSecondCurrencyChange = (e) => {
         if(e.target.value !== currencyExchangeValues.firstCurrency){
             setCurrencyExchangeValues(currencyExchangeValues =>
                 ({...currencyExchangeValues, secondCurrency: e.target.value}));
-            exchangeRateConverterFirst();
         }
     }
 
@@ -102,7 +79,6 @@ const ExchangeRateCalculation = () => {
         if(e.target.value !== currencyExchangeValues.secondCurrency){
             setCurrencyExchangeValues(currencyExchangeValues =>
                 ({...currencyExchangeValues, firstCurrency: e.target.value}));
-            exchangeRateConverterFirst();
         }
     }
 
@@ -115,10 +91,11 @@ const ExchangeRateCalculation = () => {
                 <div className='currency_selector'>
                     <p>From:</p>
                     <div className='currency_selector__inputs'>
-                        <input type='number' min='0'
+                        <input type='number'
+                               min='0'
                                value={currencyExchangeValues.firstCurrencyValue}
                                onChange={handleFirstValueChange}/>
-                        <select onChange={handleFirstCurrencyChange}>
+                        <select onChange={handleFirstCurrencyChange} >
                             {options}
                         </select>
                     </div>
@@ -126,14 +103,18 @@ const ExchangeRateCalculation = () => {
                 <div className='currency_selector'>
                     <p>To:</p>
                     <div className='currency_selector__inputs'>
-                        <input type='number' min='0'
+                        <input type='number'
+                               min='0'
                                value={currencyExchangeValues.secondCurrencyValue}
                                onChange={handleSecondValueChange}/>
-                        <select onChange={handleSecondCurrencyChange} defaultValue='UAH Ukrainian Hryvnia'>
+                        <select onChange={handleSecondCurrencyChange} defaultValue='UAH'>
                             {options}
                         </select>
                     </div>
                 </div>
+                <button onClick={currencyExchangeValues.lastChangedValue === 1 ?
+                    exchangeRateConverterFirst : exchangeRateConverterSecond}
+                className='currency_convert_button'>Convert</button>
             </div>
         </div>
     );
